@@ -17,6 +17,7 @@ import { MODELS } from "@/app/components/assistant/ModelToggle";
 import {
     isModelAvailable,
     modelGroupToProvider,
+    type ModelApiKeys,
 } from "@/app/lib/modelAvailability";
 
 export default function ModelsAndApiKeysPage() {
@@ -44,6 +45,8 @@ export default function ModelsAndApiKeysPage() {
                             apiKeys={{
                                 claudeApiKey: profile?.claudeApiKey ?? null,
                                 geminiApiKey: profile?.geminiApiKey ?? null,
+                                openrouterApiKey: profile?.openrouterApiKey ?? null,
+                                nvidiaApiKey: profile?.nvidiaApiKey ?? null,
                             }}
                             onChange={(id) =>
                                 updateModelPreference("tabularModel", id)
@@ -86,6 +89,22 @@ export default function ModelsAndApiKeysPage() {
                             updateApiKey("gemini", value.trim() || null)
                         }
                     />
+                    <ApiKeyField
+                        label="OpenRouter API Key"
+                        placeholder="sk-or-…"
+                        initialValue={profile?.openrouterApiKey ?? ""}
+                        onSave={(value) =>
+                            updateApiKey("openrouter", value.trim() || null)
+                        }
+                    />
+                    <ApiKeyField
+                        label="NVIDIA NIM API Key"
+                        placeholder="nvapi-…"
+                        initialValue={profile?.nvidiaApiKey ?? ""}
+                        onSave={(value) =>
+                            updateApiKey("nvidia", value.trim() || null)
+                        }
+                    />
                 </div>
             </div>
         </div>
@@ -99,12 +118,17 @@ function TabularModelDropdown({
 }: {
     value: string;
     onChange: (id: string) => void;
-    apiKeys: { claudeApiKey: string | null; geminiApiKey: string | null };
+    apiKeys: ModelApiKeys;
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const selected = MODELS.find((m) => m.id === value);
     const selectedAvailable = isModelAvailable(value, apiKeys);
-    const groups: ("Anthropic" | "Google")[] = ["Anthropic", "Google"];
+    const groups: ("Anthropic" | "Google" | "OpenRouter" | "NVIDIA NIM")[] = [
+        "Anthropic",
+        "Google",
+        "OpenRouter",
+        "NVIDIA NIM",
+    ];
 
     return (
         <DropdownMenu onOpenChange={setIsOpen}>
@@ -153,7 +177,15 @@ function TabularModelDropdown({
                                         onSelect={() => onChange(m.id)}
                                         title={
                                             !available
-                                                ? `Add a ${provider === "claude" ? "Claude" : "Gemini"} API key to use this model`
+                                                ? `Add a ${
+                                                      provider === "claude"
+                                                          ? "Claude"
+                                                          : provider === "gemini"
+                                                            ? "Gemini"
+                                                            : provider === "openrouter"
+                                                              ? "OpenRouter"
+                                                              : "NVIDIA NIM"
+                                                  } API key to use this model`
                                                 : undefined
                                         }
                                     >

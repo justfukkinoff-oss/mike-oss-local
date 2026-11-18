@@ -3,6 +3,8 @@ import {
     resolveModel,
     DEFAULT_TITLE_MODEL,
     DEFAULT_TABULAR_MODEL,
+    DEFAULT_OPENROUTER_MODEL,
+    DEFAULT_NVIDIA_MODEL,
     type UserApiKeys,
 } from "./llm";
 
@@ -14,11 +16,26 @@ export type UserModelSettings = {
 
 // Title generation is a lightweight task — always routed to the cheapest model
 // of whichever provider the user has keys for: Gemini Flash Lite if Gemini is
-// available, otherwise Claude Haiku. With no user keys set, defaults to Gemini
-// (the dev-mode env fallback).
+// available, otherwise Claude Haiku. With no user keys set, fall back to the
+// OpenAI-compatible providers (OpenRouter / NVIDIA NIM), then to the dev-mode
+// env defaults.
 function resolveTitleModel(apiKeys: UserApiKeys): string {
     if (apiKeys.gemini?.trim()) return DEFAULT_TITLE_MODEL;
     if (apiKeys.claude?.trim()) return "claude-haiku-4-5";
+    if (
+        apiKeys.openrouter?.trim() ||
+        (!apiKeys.claude?.trim() &&
+            !apiKeys.gemini?.trim() &&
+            process.env.OPENROUTER_API_KEY?.trim())
+    ) {
+        return DEFAULT_OPENROUTER_MODEL;
+    }
+    if (
+        apiKeys.nvidia?.trim() ||
+        process.env.NVIDIA_API_KEY?.trim()
+    ) {
+        return DEFAULT_NVIDIA_MODEL;
+    }
     return DEFAULT_TITLE_MODEL;
 }
 

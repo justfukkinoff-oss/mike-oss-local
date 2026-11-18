@@ -1,0 +1,10 @@
+{
+  "appId": "com.local.mikeoss",
+  "appName": "MikeOSS",
+  "webDir": "backend/public",
+  "server": {
+    "url": "http://127.0.0.1:3001",
+    "cleartext": true,
+    "errorPath": "error.html"
+  }
+}

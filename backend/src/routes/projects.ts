@@ -6,7 +6,6 @@ import {
   attachLatestVersionNumbers,
 } from "../lib/documentVersions";
 import { downloadFile, uploadFile, storageKey } from "../lib/storage";
-import { docxToPdf, convertedPdfKey } from "../lib/convert";
 import { checkProjectAccess } from "../lib/access";
 import { singleFileUpload } from "../lib/upload";
 
@@ -392,22 +391,16 @@ projectsRouter.post(
               : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
           await uploadFile(newKey, srcBytes, contentType);
 
-          // PDFs share one object for source + display rendition. DOCX
-          // store the converted PDF at a separate `converted-pdfs/` key —
-          // copy that too if it exists so the copy renders without going
-          // back through libreoffice.
+          // No LibreOffice in the Android/APK build: a copied .docx has no
+          // converted-PDF rendition. Only PDFs (rendition = source bytes)
+          // carry a pdf_storage_path over to the copy.
           let newPdfPath: string | null = null;
-          if (srcV.pdf_storage_path) {
-            if (srcV.pdf_storage_path === srcV.storage_path) {
-              newPdfPath = newKey;
-            } else {
-              const pdfBytes = await downloadFile(srcV.pdf_storage_path);
-              if (pdfBytes) {
-                const newPdfKey = convertedPdfKey(userId, copy.id as string);
-                await uploadFile(newPdfKey, pdfBytes, "application/pdf");
-                newPdfPath = newPdfKey;
-              }
-            }
+          if (
+            srcV.pdf_storage_path &&
+            srcV.pdf_storage_path === srcV.storage_path &&
+            doc.file_type === "pdf"
+          ) {
+            newPdfPath = newKey;
           }
 
           const { data: newV } = await db
@@ -645,28 +638,11 @@ export async function handleDocumentUpload(
     const tree = await extractStructureTree(rawBuf, suffix, filename);
     const pageCount = suffix === "pdf" ? await countPdfPages(rawBuf) : null;
 
-    // Convert DOCX/DOC → PDF for display. PDFs are their own rendition.
+    // No PDF rendition is generated in the Android/APK build: .docx stays
+    // native .docx end-to-end. Only an uploaded PDF self-identifies as its
+    // own rendition.
     let pdfStoragePath: string | null = null;
-    if (suffix === "docx" || suffix === "doc") {
-      try {
-        const pdfBuf = await docxToPdf(content);
-        const pdfKey = convertedPdfKey(userId, docId);
-        await uploadFile(
-          pdfKey,
-          pdfBuf.buffer.slice(
-            pdfBuf.byteOffset,
-            pdfBuf.byteOffset + pdfBuf.byteLength,
-          ) as ArrayBuffer,
-          "application/pdf",
-        );
-        pdfStoragePath = pdfKey;
-      } catch (err) {
-        console.error(
-          `[upload] DOCX→PDF conversion failed for ${filename}:`,
-          err,
-        );
-      }
-    } else if (suffix === "pdf") {
+    if (suffix === "pdf") {
       pdfStoragePath = key;
     }
 

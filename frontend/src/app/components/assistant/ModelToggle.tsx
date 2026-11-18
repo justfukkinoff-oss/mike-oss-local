@@ -10,12 +10,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { isModelAvailable } from "@/app/lib/modelAvailability";
+import {
+    isModelAvailable,
+    type ModelApiKeys,
+} from "@/app/lib/modelAvailability";
 
 export interface ModelOption {
     id: string;
     label: string;
-    group: "Anthropic" | "Google";
+    group: "Anthropic" | "Google" | "OpenRouter" | "NVIDIA NIM";
 }
 
 export const MODELS: ModelOption[] = [
@@ -23,30 +26,78 @@ export const MODELS: ModelOption[] = [
     { id: "claude-sonnet-4-6", label: "Claude Sonnet 4.6", group: "Anthropic" },
     { id: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro", group: "Google" },
     { id: "gemini-3-flash-preview", label: "Gemini 3 Flash", group: "Google" },
+    {
+        id: "openrouter/anthropic/claude-3.5-sonnet",
+        label: "Claude 3.5 Sonnet",
+        group: "OpenRouter",
+    },
+    {
+        id: "openrouter/openai/gpt-4o",
+        label: "GPT-4o",
+        group: "OpenRouter",
+    },
+    {
+        id: "nvidia/meta/llama-3.3-70b-instruct",
+        label: "Llama 3.3 70B",
+        group: "NVIDIA NIM",
+    },
+    {
+        id: "nvidia/nvidia/llama-3.3-nemotron-super-49b-v1",
+        label: "Nemotron Super 49B",
+        group: "NVIDIA NIM",
+    },
 ];
 
 export const DEFAULT_MODEL_ID = "claude-sonnet-4-6";
 
+export function isAllowedModelId(id: string): boolean {
+    return (
+        MODELS.some((m) => m.id === id) ||
+        id.startsWith("openrouter/") ||
+        id.startsWith("nvidia/")
+    );
+}
+
 export const ALLOWED_MODEL_IDS = new Set(MODELS.map((m) => m.id));
 
-const GROUP_ORDER: ModelOption["group"][] = ["Anthropic", "Google"];
+const GROUP_ORDER: ModelOption["group"][] = [
+    "Anthropic",
+    "Google",
+    "OpenRouter",
+    "NVIDIA NIM",
+];
 
 interface Props {
     value: string;
     onChange: (id: string) => void;
-    apiKeys?: {
-        claudeApiKey: string | null;
-        geminiApiKey: string | null;
-    };
+    apiKeys?: ModelApiKeys;
 }
 
 export function ModelToggle({ value, onChange, apiKeys }: Props) {
     const [isOpen, setIsOpen] = useState(false);
+    const [customOpenRouter, setCustomOpenRouter] = useState("");
+    const [customNvidia, setCustomNvidia] = useState("");
     const selected = MODELS.find((m) => m.id === value);
-    const selectedLabel = selected?.label ?? "Model";
+    const selectedLabel = selected?.label ?? value;
     const selectedAvailable = apiKeys
         ? isModelAvailable(value, apiKeys)
         : true;
+
+    const applyCustomOpenRouter = () => {
+        const id = customOpenRouter.trim();
+        if (!id) return;
+        onChange(`openrouter/${id}`);
+        setCustomOpenRouter("");
+        setIsOpen(false);
+    };
+
+    const applyCustomNvidia = () => {
+        const id = customNvidia.trim();
+        if (!id) return;
+        onChange(`nvidia/${id}`);
+        setCustomNvidia("");
+        setIsOpen(false);
+    };
 
     return (
         <DropdownMenu onOpenChange={setIsOpen}>
@@ -69,10 +120,12 @@ export function ModelToggle({ value, onChange, apiKeys }: Props) {
                     />
                 </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56 z-50" side="top" align="start">
+            <DropdownMenuContent className="w-64 z-50 max-h-96 overflow-y-auto" side="top" align="start">
                 {GROUP_ORDER.map((group, gi) => {
                     const items = MODELS.filter((m) => m.group === group);
-                    if (items.length === 0) return null;
+                    const isCustomGroup =
+                        group === "OpenRouter" || group === "NVIDIA NIM";
+                    if (items.length === 0 && !isCustomGroup) return null;
                     return (
                         <div key={group}>
                             {gi > 0 && <DropdownMenuSeparator />}
@@ -106,6 +159,40 @@ export function ModelToggle({ value, onChange, apiKeys }: Props) {
                                     </DropdownMenuItem>
                                 );
                             })}
+                            {isCustomGroup && (
+                                <div className="flex items-center gap-1 px-2 py-1.5">
+                                    <input
+                                        type="text"
+                                        value={
+                                            group === "OpenRouter"
+                                                ? customOpenRouter
+                                                : customNvidia
+                                        }
+                                        onChange={(e) =>
+                                            group === "OpenRouter"
+                                                ? setCustomOpenRouter(e.target.value)
+                                                : setCustomNvidia(e.target.value)
+                                        }
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (group === "OpenRouter") {
+                                                    applyCustomOpenRouter();
+                                                } else {
+                                                    applyCustomNvidia();
+                                                }
+                                            }
+                                        }}
+                                        placeholder={
+                                            group === "OpenRouter"
+                                                ? "vendor/custom-model-id\u2026"
+                                                : "org/model-name\u2026"
+                                        }
+                                        className="w-full h-6 rounded border border-gray-200 px-2 text-xs focus:outline-none focus:ring-1 focus:ring-gray-300"
+                                    />
+                                </div>
+                            )}
                         </div>
                     );
                 })}

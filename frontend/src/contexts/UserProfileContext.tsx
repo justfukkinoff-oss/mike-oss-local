@@ -21,6 +21,8 @@ interface UserProfile {
     tabularModel: string;
     claudeApiKey: string | null;
     geminiApiKey: string | null;
+    openrouterApiKey: string | null;
+    nvidiaApiKey: string | null;
 }
 
 interface UserProfileContextType {
@@ -33,7 +35,7 @@ interface UserProfileContextType {
         value: string,
     ) => Promise<boolean>;
     updateApiKey: (
-        provider: "claude" | "gemini",
+        provider: "claude" | "gemini" | "openrouter" | "nvidia",
         value: string | null,
     ) => Promise<boolean>;
     reloadProfile: () => Promise<void>;
@@ -77,6 +79,8 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
                     tabularModel: "claude-sonnet-4-6",
                     claudeApiKey: null,
                     geminiApiKey: null,
+                    openrouterApiKey: null,
+                    nvidiaApiKey: null,
                 });
                 return;
             }
@@ -111,6 +115,8 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
                         data.tabular_model || "claude-sonnet-4-6",
                     claudeApiKey: data.claude_api_key ?? null,
                     geminiApiKey: data.gemini_api_key ?? null,
+                    openrouterApiKey: data.openrouter_api_key as string | null ?? null,
+                    nvidiaApiKey: data.nvidia_api_key as string | null ?? null,
                 });
 
                 // 2. Update database in background if needed
@@ -148,6 +154,8 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
                 tabularModel: "claude-sonnet-4-6",
                 claudeApiKey: null,
                 geminiApiKey: null,
+                openrouterApiKey: null,
+                nvidiaApiKey: null,
             });
         } finally {
             setLoading(false);
@@ -245,14 +253,12 @@ export function UserProfileProvider({ children }: { children: ReactNode }) {
 
     const updateApiKey = useCallback(
         async (
-            provider: "claude" | "gemini",
+            provider: "claude" | "gemini" | "openrouter" | "nvidia",
             value: string | null,
         ): Promise<boolean> => {
             if (!user) return false;
-            const dbField =
-                provider === "claude" ? "claude_api_key" : "gemini_api_key";
-            const stateField =
-                provider === "claude" ? "claudeApiKey" : "geminiApiKey";
+            const dbField = `${provider}_api_key`;
+            const stateField = `${provider}ApiKey`;
             const normalized = value?.trim() ? value.trim() : null;
             try {
                 const { error } = await supabase
