@@ -79,3 +79,13 @@ npm run lint --prefix frontend
 ## License
 
 AGPL-3.0-only. See `LICENSE`.
+
+## Android APK
+
+This fork builds a fully standalone Android APK: the Express backend runs
+inside an embedded nodejs-mobile runtime, the Next.js UI is statically
+exported and served by that same local server, and documents stay native
+`.docx` (no LibreOffice / PDF conversion). OpenRouter and NVIDIA NIM are
+available as LLM providers alongside Claude and Gemini.
+
+See [docs/ANDROID.md](docs/ANDROID.md) for build instructions.

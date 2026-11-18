@@ -1882,7 +1882,12 @@ export async function runToolCalls(
                     );
                     const sourcePath =
                         active?.storage_path ?? sourceInfo.storage_path;
-                    const sourcePdfPath = active?.pdf_storage_path ?? null;
+                    // Only a native PDF carries its own rendition; .docx
+                    // copies stay native .docx (no PDF conversion node).
+                    const sourcePdfPath =
+                        sourceInfo.file_type === "pdf"
+                            ? (active?.pdf_storage_path ?? null)
+                            : null;
                     const raw = await downloadFile(sourcePath);
                     const pdfBytes = sourcePdfPath
                         ? await downloadFile(sourcePdfPath)

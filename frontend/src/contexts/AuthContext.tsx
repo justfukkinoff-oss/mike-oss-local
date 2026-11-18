@@ -1,5 +1,6 @@
 "use client";
 
+import { resolveApiBase } from "@/lib/apiBase";
 import React, {
     createContext,
     useContext,
@@ -29,8 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         const ensureProfile = async (accessToken: string) => {
-            const apiBase =
-                process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+            const apiBase = resolveApiBase();
             await fetch(`${apiBase}/user/profile`, {
                 method: "POST",
                 headers: { Authorization: `Bearer ${accessToken}` },

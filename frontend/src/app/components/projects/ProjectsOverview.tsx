@@ -300,7 +300,7 @@ export function ProjectsOverview() {
                                 key={project.id}
                                 onClick={() => {
                                     if (renamingId === project.id) return;
-                                    router.push(`/projects/${project.id}`);
+                                    router.push(`/projects/view?id=${project.id}`);
                                 }}
                                 className="group flex items-center h-10 pr-8 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
                             >
@@ -434,7 +434,7 @@ export function ProjectsOverview() {
                 onClose={() => setModalOpen(false)}
                 onCreated={(p) => {
                     setProjects((prev) => [p, ...prev]);
-                    router.push(`/projects/${p.id}`);
+                    router.push(`/projects/view?id=${p.id}`);
                 }}
             />
 

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>MikeOSS</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      background: #fafafa;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #374151;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid #d1d5db;
+      border-top-color: #111827;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    p { margin: 0; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="spinner"></div>
+  <p>Starting MikeOSS&hellip;</p>
+  <script>
+    // The embedded Express server takes a moment to boot; retry loading it.
+    (function poll() {
+      fetch("/", { cache: "no-store" })
+        .then(function (r) {
+          if (r.ok) window.location.replace("/");
+          else setTimeout(poll, 800);
+        })
+        .catch(function () { setTimeout(poll, 800); });
+    })();
+  </script>
+</body>
+</html>

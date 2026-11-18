@@ -34,7 +34,7 @@ export function SelectAssistantProjectModal({ open, onClose }: Props) {
             const chatId = await saveChat(selectedId);
             if (!chatId) return;
             onClose();
-            router.push(`/projects/${selectedId}/assistant/chat/${chatId}`);
+            router.push(`/projects/view/chat?project=${selectedId}&chatId=${chatId}`);
         } finally {
             setCreating(false);
         }
