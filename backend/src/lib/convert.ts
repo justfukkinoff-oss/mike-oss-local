@@ -1,17 +1,4 @@
-import { promisify } from "util";
 import JSZip from "jszip";
-
-let _convert:
-  | ((buf: Buffer, ext: string, filter: undefined) => Promise<Buffer>)
-  | null = null;
-
-async function getConvert() {
-  if (!_convert) {
-    const libre = await import("libreoffice-convert");
-    _convert = promisify(libre.default.convert.bind(libre.default));
-  }
-  return _convert;
-}
 
 /**
  * Some older Windows/Word archives store .docx entries with backslash
@@ -45,15 +32,9 @@ export async function normalizeDocxZipPaths(buffer: Buffer): Promise<Buffer> {
 }
 
 /**
- * Convert a DOCX/DOC buffer to PDF using LibreOffice.
- * Throws if LibreOffice is not installed or conversion fails.
+ * The Android/APK build has no LibreOffice and no PDF conversion step:
+ * .docx documents are stored, edited, and exported natively as .docx.
  */
-export async function docxToPdf(buffer: Buffer): Promise<Buffer> {
-  const convert = await getConvert();
-  const normalized = await normalizeDocxZipPaths(buffer);
-  return convert(normalized, ".pdf", undefined);
-}
-
 export function convertedPdfKey(userId: string, docId: string): string {
   return `converted-pdfs/${userId}/${docId}.pdf`;
 }

@@ -70,17 +70,17 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
     }, [isDropdownOpen]);
 
     useEffect(() => {
-        if (pathname.startsWith("/assistant/chat/")) {
-            const chatId = pathname.split("/").pop() ?? null;
-            setCurrentChatId(chatId);
+        // Query-param routing (static export): ids now live in the query
+        // string rather than in path segments.
+        if (pathname === "/assistant/chat") {
+            const params = new URLSearchParams(window.location.search);
+            setCurrentChatId(params.get("id"));
             return;
         }
 
-        const projectChatMatch = pathname.match(
-            /^\/projects\/[^/]+\/assistant\/chat\/([^/]+)/,
-        );
-        if (projectChatMatch) {
-            setCurrentChatId(projectChatMatch[1]);
+        if (pathname === "/projects/view/chat") {
+            const params = new URLSearchParams(window.location.search);
+            setCurrentChatId(params.get("chatId"));
             return;
         }
 
@@ -240,8 +240,8 @@ export function AppSidebar({ isOpen, onToggle }: AppSidebarProps) {
                                             setCurrentChatId(chat.id);
                                             router.push(
                                                 chat.project_id
-                                                    ? `/projects/${chat.project_id}/assistant/chat/${chat.id}`
-                                                    : `/assistant/chat/${chat.id}`,
+                                                    ? `/projects/view/chat?project=${chat.project_id}&chatId=${chat.id}`
+                                                    : `/assistant/chat?id=${chat.id}`,
                                             );
                                         }}
                                     />

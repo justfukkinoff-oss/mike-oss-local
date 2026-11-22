@@ -18,6 +18,8 @@ type LooseData = unknown[] &
         tabular_model: string;
         claude_api_key: string | null;
         gemini_api_key: string | null;
+        openrouter_api_key: string | null;
+        nvidia_api_key: string | null;
     };
 
 type LocalResult = {
@@ -25,8 +27,9 @@ type LocalResult = {
     error: { message: string } | null;
 };
 
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+import { resolveApiBase } from "@/lib/apiBase";
+
+const API_BASE = resolveApiBase();
 const LOCAL_USER_ID = process.env.NEXT_PUBLIC_LOCAL_USER_ID ?? "local-user";
 const LOCAL_EMAIL_KEY = "mike.localUserEmail";
 

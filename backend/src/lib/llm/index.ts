@@ -1,5 +1,9 @@
 import { streamClaude, completeClaudeText } from "./claude";
 import { streamGemini, completeGeminiText } from "./gemini";
+import {
+    streamOpenAICompat,
+    completeOpenAICompatText,
+} from "./openaiCompat";
 import { providerForModel } from "./models";
 import type { StreamChatParams, StreamChatResult, UserApiKeys } from "./types";
 
@@ -11,7 +15,8 @@ export async function streamChatWithTools(
 ): Promise<StreamChatResult> {
     const provider = providerForModel(params.model);
     if (provider === "claude") return streamClaude(params);
-    return streamGemini(params);
+    if (provider === "gemini") return streamGemini(params);
+    return streamOpenAICompat(provider, params);
 }
 
 export async function completeText(params: {
@@ -23,5 +28,6 @@ export async function completeText(params: {
 }): Promise<string> {
     const provider = providerForModel(params.model);
     if (provider === "claude") return completeClaudeText(params);
-    return completeGeminiText(params);
+    if (provider === "gemini") return completeGeminiText(params);
+    return completeOpenAICompatText(provider, params);
 }

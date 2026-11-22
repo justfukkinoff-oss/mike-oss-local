@@ -1,5 +1,6 @@
 "use client";
 
+import { resolveApiBase } from "@/lib/apiBase";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
@@ -63,8 +64,7 @@ export function useFetchDocxBytes(
         }
 
         const key = cacheKey(documentId, versionId, refetchKey);
-        const apiBase =
-            process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3001";
+        const apiBase = resolveApiBase();
         const qs = versionId
             ? `?version_id=${encodeURIComponent(versionId)}`
             : "";

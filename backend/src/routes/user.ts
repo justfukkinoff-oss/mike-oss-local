@@ -12,6 +12,8 @@ const PROFILE_UPDATE_FIELDS = new Set([
   "tabular_model",
   "claude_api_key",
   "gemini_api_key",
+  "openrouter_api_key",
+  "nvidia_api_key",
   "updated_at",
 ]);
 

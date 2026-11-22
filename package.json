@@ -1,0 +1,20 @@
+{
+  "name": "mike-oss-local",
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "scripts": {
+    "backend:build": "npm install --prefix backend && npm run build --prefix backend",
+    "frontend:build": "npm install --prefix frontend && npm run export --prefix frontend",
+    "web:copy": "rm -rf backend/public && mkdir -p backend/public && cp -r frontend/out/. backend/public/",
+    "web:sync": "npm run backend:build && npm run frontend:build && npm run web:copy && npx cap sync android",
+    "android:prepare": "bash scripts/prepare-android.sh",
+    "android:open": "npx cap open android",
+    "android:build": "cd android && ./gradlew assembleRelease"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8",
+    "@capacitor/cli": "^8",
+    "@capacitor/core": "^8"
+  }
+}

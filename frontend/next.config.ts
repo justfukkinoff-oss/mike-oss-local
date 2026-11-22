@@ -1,20 +1,12 @@
 import type { NextConfig } from "next";
 
+// Static export (Step 3 of the Android port): `next build` emits a fully
+// static site into ./out which the Express backend serves from ./public.
+// Cloudflare/OpenNext collect-and-deploy paths are not used in the APK build.
 const nextConfig: NextConfig = {
-    /* config options here */
+    output: "export",
+    images: { unoptimized: true },
     reactCompiler: true,
-    async rewrites() {
-        return [
-            {
-                source: "/sitemap.xml",
-                destination: "/api/sitemap/sitemap.xml",
-            },
-            {
-                source: "/sitemap_:slug.xml",
-                destination: "/api/sitemap/sitemap_:slug.xml",
-            },
-        ];
-    },
     skipTrailingSlashRedirect: true,
 };
 
